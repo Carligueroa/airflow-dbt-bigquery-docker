@@ -1,13 +1,10 @@
 dbtlearn:
   outputs:
-    dev:
-      account: 'your-account'
-      database: 'your-db'
-      password: 'your-password'
-      role: transform
-      schema: DEV
-      threads: 1
-      type: snowflake
-      user: dbt
-      warehouse: COMPUTE_WH
-  target: dev
+    default:
+      type: bigquery
+      method: service-account
+      project: pension-bee-demo
+      dataset: data8
+      threads: 4
+      keyfile: /dbtlearn/bigquery-sa.json
+
