@@ -160,5 +160,8 @@ services:
         - "8085:8085"
       environment:
         - TZ=Etc/GMT
+        - DBT_PROFILES_DIR=/dbtlearn
+        - DBT_PROJECT_DIR=/dbtlearn
+        - PATH=/usr/local/bin:$PATH
         
  

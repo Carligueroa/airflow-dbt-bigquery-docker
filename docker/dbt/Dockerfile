@@ -9,8 +9,11 @@ RUN apt-get install -y python3 python3-pip
 # Update pip to the latest version
 RUN python3 -m pip install --upgrade pip
 
-# install openssl version 1.1.1
-RUN apt-get update && apt-get install -y libssl1.1
+# install openssl version 1.1.1 and git
+RUN apt-get update && \
+    apt-get install -y libssl1.1 && \
+    apt-get install -y git && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/app
 
