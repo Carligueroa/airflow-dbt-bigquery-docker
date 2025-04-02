@@ -33,5 +33,15 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   dbtlearn:
     +materialized: view
-    business_layer:
+
+    staging:
+      +materialized: view
+      +schema: dbt_staging
+
+    intermediate:
+      +materialized: view
+      +schema: dbt_intermediate
+
+    marts:
       +materialized: table
+      +schema: dbt_mart
