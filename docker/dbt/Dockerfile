@@ -13,7 +13,8 @@ RUN python3 -m pip install --upgrade pip
 RUN apt-get update && \
     apt-get install -y libssl1.1 && \
     apt-get install -y git && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 WORKDIR /usr/app
 
