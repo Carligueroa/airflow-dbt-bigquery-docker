@@ -1,3 +1,5 @@
 *.json
 *.log
 *.pyc
+dbtlearn/target/
+dbtlearn/logs/
