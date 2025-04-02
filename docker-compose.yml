@@ -4,6 +4,7 @@ x-airflow-common:
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.3.0}
   environment:
     &airflow-common-env
+    AIRFLOW_UID: "${AIRFLOW_UID:-50000}"
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -22,7 +23,6 @@ x-airflow-common:
     - /var/run/docker.sock:/var/run/docker.sock
     - ./dbtlearn:/dbtlearn
 
-  user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -30,6 +30,9 @@ x-airflow-common:
     postgres:
       condition: service_healthy
 
+networks:
+  default_network:
+    driver: bridge
 
 services:
     redis:
@@ -42,6 +45,8 @@ services:
         timeout: 30s
         retries: 50
       restart: always
+      networks:
+        - default_network
 
     postgres:
       image: postgres:13
@@ -54,12 +59,16 @@ services:
         - POSTGRES_PASSWORD=airflow
         - POSTGRES_DB=airflow
       restart: always
-    
+      networks:
+        - default_network
 
 
     airflow-webserver:
       <<: *airflow-common
       command: webserver
+      user: "0:0"
+      networks:
+        - default_network
       ports:
         - 8080:8080
       healthcheck:
@@ -92,20 +101,25 @@ services:
     airflow-scheduler:
       <<: *airflow-common
       command: scheduler
+      user: "0:0"
       healthcheck:
         test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
         interval: 10s
         timeout: 10s
         retries: 5
       restart: always
+      networks:
+        - default_network
       depends_on:
         <<: *airflow-common-depends-on           
         airflow-init:
           condition: service_completed_successfully
 
+
     airflow-worker:
       <<: *airflow-common
       command: celery worker
+      user: "0:0"
       healthcheck:
         test:
           - "CMD-SHELL"
@@ -114,6 +128,8 @@ services:
         timeout: 10s
         retries: 5 
       restart: always
+      networks:
+        - default_network
       environment:
         <<: *airflow-common-env
         DUMB_INIT_SETSID: "0"
@@ -125,6 +141,8 @@ services:
     airflow-init:
       <<: *airflow-common
       entrypoint: /bin/bash
+      networks:
+        - default_network
       command: 
         - -c
         - |
@@ -144,6 +162,8 @@ services:
 
     dbt:
       image: custom_dbt_image
+      networks:
+        - default_network
       container_name: dbt
       build: ./docker/dbt/
       command: 
@@ -163,5 +183,5 @@ services:
         - DBT_PROFILES_DIR=/dbtlearn
         - DBT_PROJECT_DIR=/dbtlearn
         - PATH=/usr/local/bin:$PATH
-        
+      
  
