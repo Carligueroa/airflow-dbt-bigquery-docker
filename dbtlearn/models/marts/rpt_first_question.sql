@@ -25,6 +25,7 @@ result as (
     from grouped
     order by
         commit_count desc
+    limit 1
 
 ) 
     

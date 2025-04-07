@@ -19,9 +19,9 @@ commits as (
 
 ),
 
-commit_counts as (
+top_3_repositories as (
 
-    select 
+    select
         repository_id,
         repository_full_name,
         count(*) as commit_count
@@ -35,25 +35,13 @@ filtered_events as (
 
     select
         events.event_type,
-        events.repository_id,
-        events.repository_full_name,
+        top_3_repositories.repository_id,
+        top_3_repositories.repository_full_name,
         count(*) as event_count
     from events
-    left join commit_counts
-    on (events.repository_id = commit_counts.repository_id)
-    group by events.event_type,events.repository_id, events.repository_full_name
-
-),
-
-ranked_events as (
-    
-    select
-        repository_id,
-        repository_full_name,
-        event_type,
-        event_count,
-        rank() over (partition by repository_id order by event_count desc) as event_rank
-  from filtered_events
+    right join top_3_repositories
+    on (events.repository_id = top_3_repositories.repository_id)
+    group by events.event_type, top_3_repositories.repository_id, top_3_repositories.repository_full_name
 
 ),
 
@@ -63,11 +51,8 @@ result as (
         repository_full_name,
         event_type,
         event_count,
-        event_rank
-    from ranked_events
-    where event_rank <= 3
-    order by repository_full_name, event_rank
+        rank() over (partition by repository_id order by event_count desc) as event_rank
+    from filtered_events
 
 )
-
 select * from result
